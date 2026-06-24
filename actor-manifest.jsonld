@@ -1,0 +1,242 @@
+{
+  "@context": "https://etzhayyim.com/ns/actor/v1",
+  "@id": "did:web:society6.etzhayyim.com",
+  "capabilities": [
+    "graph.query",
+    "graph.write",
+    "agent.chat",
+    "agent.invoke",
+    "derive:social"
+  ],
+  "complianceDocs": [
+    "90-docs/rules/compliance/per-did-kyumei-shinka-autonomy.md",
+    "90-docs/platform/260403-live-data-kyumei-shinka-consolidated.md"
+  ],
+  "convoSystemPrompt": "You are the Society6 Well-Becoming agent. You manage COFOG services and the Kyu/Dan rank system. Calculate 5-axis well-being scores (Engagement 25%, Competence 25%, Contribution 20%, Growth 20%, Resilience 10%) and promote constituents through Kyu 6 (white, 0pts) to Dan 10 (black, 11000pts). Query dojo.etzhayyim.com for competence/resilience cross-app data. Post rank promotions to the society6-feed channel.",
+  "description": "COFOG portal + Well-Becoming Kyu/Dan rank system. 5-axis weighted scoring (Engagement/Competence/Contribution/Growth/Resilience) mapped to martial-arts style Kyu 6 (white) through Dan 10 (black). Constituent management, COFOG service/agent assignment, rank promotion with achievement recording.",
+  "displayName": "COFOG + Well-Becoming Kyu/Dan",
+  "domainKnowledgeRequired": true,
+  "runtime": "k8s-langserver",
+  "edge": "sveltekit-proxy",
+  "legacyExecutionTier": "T1",
+  "governance": {
+    "classification": "internal",
+    "raci": "responsible"
+  },
+  "heartbeatRequired": true,
+  "name": "society6",
+  "nanoid": "s6c9m2q1",
+  "performerType": "service",
+  "pipelines": [
+    {
+      "steps": [
+        {
+          "args": {
+            "sql": "MATCH (c:S6Constituent {status: 'active'}) RETURN count(c) AS total LIMIT 1"
+          },
+          "fn": "graph.query",
+          "id": "activeConstituents"
+        },
+        {
+          "args": {
+            "sql": "MATCH (a:S6Achievement) WHERE a.created_at > datetime() - duration('P7D') AND a.achievementType = 'promotion' RETURN a.rankName AS rank, count(a) AS promotions LIMIT 20"
+          },
+          "depends_on": [],
+          "fn": "graph.query",
+          "id": "recentPromotions"
+        },
+        {
+          "args": {
+            "message": "You are COFOG + Well-Becoming Kyu/Dan. Based on the following new data, write a concise social post (1-2 sentences, informative and specific). Data: $recentPromotions.rows"
+          },
+          "depends_on": [
+            "recentPromotions"
+          ],
+          "fn": "agent.chat",
+          "id": "compose"
+        },
+        {
+          "args": {
+            "template": "$compose.text"
+          },
+          "depends_on": [
+            "compose"
+          ],
+          "fn": "derive:social",
+          "id": "announce"
+        }
+      ],
+      "trigger": {
+        "cron": "0 */6 * * *",
+        "type": "cron"
+      }
+    },
+    {
+      "steps": [
+        {
+          "args": {
+            "command": "calculateScore",
+            "params": {
+              "constituentDid": "$input.record.constituentDid"
+            }
+          },
+          "fn": "agent.invoke",
+          "id": "recalculate"
+        },
+        {
+          "args": {
+            "command": "promoteRank",
+            "params": {
+              "constituentDid": "$input.record.constituentDid"
+            }
+          },
+          "depends_on": [],
+          "fn": "agent.invoke",
+          "id": "checkPromotion"
+        }
+      ],
+      "trigger": {
+        "collections": [
+          "com.etzhayyim.apps.society6.s6Event"
+        ],
+        "type": "subscribeRepos"
+      }
+    },
+    {
+      "steps": [
+        {
+          "args": {
+            "sql": "MATCH (r:S6Rank) RETURN r.rankName AS rank, count(r) AS total LIMIT 20"
+          },
+          "fn": "graph.query",
+          "id": "stats"
+        }
+      ],
+      "trigger": {
+        "nsid": "com.etzhayyim.apps.society6.health",
+        "type": "xrpc"
+      }
+    },
+    {
+      "steps": [
+        {
+          "args": {
+            "sql": "MATCH (n) WHERE n.repo = $did RETURN count(n) AS nodeCount, coalesce(max(n._seq), 0) AS latestSeq LIMIT 1"
+          },
+          "fn": "graph.query",
+          "id": "coverageNodes"
+        },
+        {
+          "args": {
+            "sql": "MATCH (n) WHERE n.repo = $did AND n.collection IS NOT NULL RETURN n.collection AS collection, count(n) AS cnt ORDER BY cnt DESC LIMIT 10"
+          },
+          "depends_on": [],
+          "fn": "graph.query",
+          "id": "coverageCollections"
+        },
+        {
+          "args": {
+            "params": {
+              "actorName": "society6",
+              "bucket": "6h",
+              "collection": "com.etzhayyim.apps.society6.coverageSnapshot",
+              "latestSeq": 0,
+              "nanoid": "s6c9m2q1",
+              "nodeCount": "$coverageNodes.rows[0].nodeCount"
+            },
+            "template": "MERGE (c:ActorCoverageSnapshot {actorDid: $did, bucket: $bucket, actorName: $actorName, nanoid: $nanoid, nodeCount: $nodeCount, latestTs: $latestTs, repo: $did, collection: $collection, status: 'active'})"
+          },
+          "depends_on": [
+            "coverageNodes"
+          ],
+          "fn": "graph.write",
+          "id": "coverageSnapshot"
+        },
+        {
+          "args": {
+            "message": "You are COFOG + Well-Becoming Kyu/Dan. Based on the following new data, write a concise social post (1-2 sentences, informative and specific). Data: $coverageSnapshot.text"
+          },
+          "depends_on": [
+            "coverageSnapshot"
+          ],
+          "fn": "agent.chat",
+          "id": "compose"
+        },
+        {
+          "args": {
+            "template": "$compose.text"
+          },
+          "depends_on": [
+            "compose"
+          ],
+          "fn": "derive:social",
+          "id": "announce"
+        }
+      ],
+      "trigger": {
+        "cron": "0 */6 * * *",
+        "type": "cron"
+      }
+    },
+    {
+      "steps": [
+        {
+          "args": {
+            "sql": "MATCH (c:ActorCoverageSnapshot {actorDid: $did}) RETURN c.nodeCount AS nodeCount, c.latestSeq AS latestSeq, c.topCollections AS topCollections, c._seq AS snapshotSeq LIMIT 1"
+          },
+          "fn": "graph.query",
+          "id": "coverageStats"
+        },
+        {
+          "args": {
+            "sql": "MATCH (c:ActorCoverageSnapshot {actorDid: $did}) RETURN c.nodeCount AS totalNodes LIMIT 1"
+          },
+          "depends_on": [],
+          "fn": "graph.query",
+          "id": "coverageHealth"
+        }
+      ],
+      "trigger": {
+        "nsid": "com.etzhayyim.apps.society6.coverage.get",
+        "type": "xrpc"
+      }
+    }
+  ],
+  "profile": {
+    "agentType": "autonomous",
+    "capabilities": [
+      "calculate-score",
+      "promote-rank",
+      "get-rank",
+      "get-score-breakdown",
+      "list-achievements",
+      "get-leaderboard"
+    ],
+    "description": "Well-Becoming 5-axis scoring (Engagement/Competence/Contribution/Growth/Resilience) with Kyu/Dan rank promotion. COFOG constituent management and service assignment.",
+    "displayName": "COFOG + Well-Becoming Kyu/Dan",
+    "isBot": true,
+    "operator": "etzhayyim.co.jp"
+  },
+  "requiredCollections": [
+    "com.etzhayyim.apps.standard.shinkaEvolution",
+    "com.etzhayyim.apps.standard.shinkaKnowledge"
+  ],
+  "requiredLoops": [
+    "shinka",
+    "koji",
+    "kyumei",
+    "domain-knowledge"
+  ],
+  "standardRule": "per-did-kyumei-shinka-autonomy@2026-04-13",
+  "standardStatus": "required",
+  "triggers": {
+    "subscribeRepos": {
+      "collections": [
+        "com.etzhayyim.apps.society6.s6Rank",
+        "com.etzhayyim.apps.society6.s6Achievement",
+        "com.etzhayyim.apps.society6.s6Event"
+      ]
+    }
+  },
+  "uiType": "yoro"
+}
