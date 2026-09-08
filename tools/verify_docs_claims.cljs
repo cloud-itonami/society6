@@ -20,7 +20,7 @@
 ;; all fine". Operator tool, run by hand.
 
 (ns verify-docs-claims
-  (:require [clojure.string :as str]
+  (:require [kotoba.lang.text :as str]
             ["fs" :as fs]
             ["child_process" :as cp]))
 
