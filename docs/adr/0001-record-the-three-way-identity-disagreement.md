@@ -11,7 +11,7 @@
 
 | 場所 | DID | lexicon prefix |
 |---|---|---|
-| `src/society6/murakumo.cljc` | `did:web:society6.etzhayyim.com` | `com.etzhayyim.society6.*`（11 本） |
+| `src/society6/murakumo.kotoba` | `did:web:society6.etzhayyim.com` | `com.etzhayyim.society6.*`（11 本） |
 | `actor-manifest.jsonld` | `did:web:society6.etzhayyim.com` | `com.etzhayyim.apps.society6.*`（8 本） |
 | `.well-known/did.json`（ローカルの写し） | `did:web:etzhayyim.com:actor:society6` | — |
 | **live 文書**（`https://etzhayyim.com/actor/society6/did.json`、HTTP 200） | `did:web:etzhayyim.com:actor:society6` | `com.etzhayyim.society6`（`_meta.primaryLexicon`） |
@@ -58,7 +58,7 @@ scaffold の 11 本と manifest の 8 本の**共通部分は 0 本**。
 
 ## 結果
 
-- README と `docs/operator-quickstart.md` が食い違いを名指しし、`tools/verify_docs_claims.cljs`
+- README と `docs/operator-quickstart.md` が食い違いを名指しし、`tools/verify_docs_claims.kotoba`
   が「食い違いがまだこの形のままである」ことを検査する。**形が変われば検査が落ちる** ——
   つまり誰かが片側を直したら、この ADR が古くなったことが分かる。
 - この repo は今のところ何も実行しないので、解決しない DID による実害は出ていない。
