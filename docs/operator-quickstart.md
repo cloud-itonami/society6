@@ -20,7 +20,7 @@ cd orgs/cloud-itonami/society6
 
 ## 1. 契約テストを回す（JVM 無し、約 2 秒）
 
-`src/society6/murakumo.cljc` は `clojure.string` しか require しないので nbb で動きます。
+`src/society6/murakumo.kotoba` は `clojure.string` しか require しないので nbb で動きます。
 
 ```bash
 cat > /tmp/s6-test.cljs <<'EOF'
@@ -94,7 +94,7 @@ Ran 9 tests containing 161 assertions.
 実測（`-M:lint`）:
 
 ```
-src/society6/murakumo.cljc:131:14: warning: unused binding input
+src/society6/murakumo.kotoba:131:14: warning: unused binding input
 linting took ...ms, errors: 0, warnings: 1
 ```
 
@@ -117,8 +117,8 @@ repo を汚さないよう写しの上で壊します:
 rm -rf /tmp/s6-mut && cp -R . /tmp/s6-mut && rm -rf /tmp/s6-mut/.git
 # missing-gates が常に「欠けていない」と答えるようにする = fail-closed を壊す
 perl -0pi -e 's/\(remove #\(boolean \(gate-value attestations %\)\)\)/(remove (fn [_] true))/' \
-  /tmp/s6-mut/src/society6/murakumo.cljc
-diff -q src/society6/murakumo.cljc /tmp/s6-mut/src/society6/murakumo.cljc \
+  /tmp/s6-mut/src/society6/murakumo.kotoba
+diff -q src/society6/murakumo.kotoba /tmp/s6-mut/src/society6/murakumo.kotoba \
   || echo "mutation applied"      # 適用されていないのに緑を見て安心しないため
 (cd /tmp/s6-mut && nbb --classpath "src:test" /tmp/s6-test.cljs)
 rm -rf /tmp/s6-mut
@@ -140,8 +140,8 @@ README と本ファイルは件数・prefix・DID 文字列を本文で引用し
 動けば黙って嘘になるので、突き合わせる operator tool を置いてあります。
 
 ```bash
-nbb tools/verify_docs_claims.cljs        # 既定はオフライン（network を使わない）
-nbb tools/verify_docs_claims.cljs --network   # DNS と live DID 文書まで見る
+nbb tools/verify_docs_claims.kotoba        # 既定はオフライン（network を使わない）
+nbb tools/verify_docs_claims.kotoba --network   # DNS と live DID 文書まで見る
 ```
 
 exit は 3 値です:
@@ -165,7 +165,7 @@ FAILED	0
 ```bash
 # README の cell 数を 11 → 12 に書き換えると落ちる
 perl -0pi -e 's/\*\*11 cell\*\*/**12 cell**/' README.md
-nbb tools/verify_docs_claims.cljs ; echo "exit=$?"
+nbb tools/verify_docs_claims.kotoba ; echo "exit=$?"
 git checkout README.md
 ```
 

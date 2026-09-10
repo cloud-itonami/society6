@@ -21,12 +21,12 @@ JVM 無しで全部踏めます（`clojure` も要りません）。
 
 | path | 中身 |
 |---|---|
-| `src/society6/murakumo.cljc` | actor boundary。`cell-specs` に **11 cell**、`common-gates` に **7 gate** |
-| `test/society6/murakumo_test.cljc` | 契約テスト。`cell-specs` を introspect するので cell を足しても書き換え不要 |
+| `src/society6/murakumo.kotoba` | actor boundary。`cell-specs` に **11 cell**、`common-gates` に **7 gate** |
+| `test/society6/murakumo_test.kotoba` | 契約テスト。`cell-specs` を introspect するので cell を足しても書き換え不要 |
 | `actor-manifest.jsonld` | **旧 TypeScript 実装の manifest**（下記） |
 | `CLAUDE.md` | **旧 TypeScript 実装の説明**（下記） |
 | `.well-known/did.json` | DID 文書の**古いローカル写し**（下記） |
-| `tools/verify_docs_claims.cljs` | この README と quickstart が引用している数値を実ファイルと突き合わせる |
+| `tools/verify_docs_claims.kotoba` | この README と quickstart が引用している数値を実ファイルと突き合わせる |
 
 `murakumo.cljc` が依存するのは `clojure.string` だけです。だから nbb でも JVM でも
 同じように動きます（quickstart で両方の実測値を並べています）。
@@ -41,7 +41,7 @@ JVM 無しで全部踏めます（`clojure` も要りません）。
 ## identity と lexicon の宣言が食い違っている（実測 2026-09-02）
 
 この repo の中で actor の identity と lexicon を宣言している場所は
-`src/society6/murakumo.cljc` / `actor-manifest.jsonld` / `.well-known/did.json` の
+`src/society6/murakumo.kotoba` / `actor-manifest.jsonld` / `.well-known/did.json` の
 **3 つ**で、そこに live の DID 文書を加えた 4 つが**互いに一致していません。** どれが正かはこの repo の中からは決められないので、
 [`docs/adr/0001-record-the-three-way-identity-disagreement.md`](docs/adr/0001-record-the-three-way-identity-disagreement.md)
 に**記録し、直さない**という決定を書きました。以下は所見であって修正ではありません。
@@ -50,7 +50,7 @@ JVM 無しで全部踏めます（`clojure` も要りません）。
 
 | 宣言している場所 | DID |
 |---|---|
-| `src/society6/murakumo.cljc` の `actor-did` / `actor-manifest.jsonld` の `@id` | `did:web:society6.etzhayyim.com` |
+| `src/society6/murakumo.kotoba` の `actor-did` / `actor-manifest.jsonld` の `@id` | `did:web:society6.etzhayyim.com` |
 | `.well-known/did.json` の `id` | `did:web:etzhayyim.com:actor:society6` |
 
 did:web の解決先は `orgs/kotoba-lang/org-w3-did` の `did.core/did-web-url` で計算できます:
@@ -94,7 +94,7 @@ repo の写しと live 文書は `@context`（ed25519-2020 と jws-2020）・PDS
 
 ## この repo を読むときの優先順位
 
-1. **`src/society6/murakumo.cljc`** — ここだけが実行される（正確には、実行可能な計画を作る）
+1. **`src/society6/murakumo.kotoba`** — ここだけが実行される（正確には、実行可能な計画を作る）
 2. **`docs/adr/`** — なぜ食い違いを直していないか
 3. `actor-manifest.jsonld` / `CLAUDE.md` / `MIGRATION-TODO.md` — 旧 TypeScript 実装の記述。
    **現在のコードの仕様として読まない**
