@@ -28,7 +28,7 @@ cat > /tmp/s6-test.cljs <<'EOF'
   (:require [clojure.test :as t] [society6.murakumo-test]))
 (t/run-tests 'society6.murakumo-test)
 EOF
-nbb --classpath "src:test" /tmp/s6-test.cljs
+kbb --backend sci --classpath "src:test" /tmp/s6-test.cljs
 ```
 
 実測:
@@ -45,7 +45,7 @@ Ran 9 tests containing 161 assertions.
 gate を 1 つも渡さないと `:blocked`、7 つ全部渡すと `:ready` になります。
 
 ```bash
-nbb --classpath src -e '
+kbb --backend sci --classpath src -e '
 (ns x (:require [society6.murakumo :as m]))
 (let [p (m/cell-plan :s6rank {})]
   (println "no attestations:" (:status p) "missing=" (count (:missing-gates p)) "effects=" (count (:effects p))))
@@ -80,8 +80,8 @@ actor          : did:web:society6.etzhayyim.com
 ——待ちたい場合はそのまま再試行してください。
 
 ```bash
-node <superproject root>/scripts/resource-guard.mjs run build -- clojure -M:test
-node <superproject root>/scripts/resource-guard.mjs run build -- clojure -M:lint
+node <superproject root>/scripts/resource-guard.mjs run build -- kbb -M:test
+node <superproject root>/scripts/resource-guard.mjs run build -- kbb -M:lint
 ```
 
 実測（`-M:test`）——**1 節の nbb と件数が完全に一致します**:
@@ -120,7 +120,7 @@ perl -0pi -e 's/\(remove #\(boolean \(gate-value attestations %\)\)\)/(remove (f
   /tmp/s6-mut/src/society6/murakumo.kotoba
 diff -q src/society6/murakumo.kotoba /tmp/s6-mut/src/society6/murakumo.kotoba \
   || echo "mutation applied"      # 適用されていないのに緑を見て安心しないため
-(cd /tmp/s6-mut && nbb --classpath "src:test" /tmp/s6-test.cljs)
+(cd /tmp/s6-mut && kbb --backend sci --classpath "src:test" /tmp/s6-test.cljs)
 rm -rf /tmp/s6-mut
 ```
 
