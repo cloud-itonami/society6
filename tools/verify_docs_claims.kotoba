@@ -4,8 +4,8 @@
 ;; source moves, the prose becomes false silently -- nothing in a test run reads it.
 ;; This tool re-derives every quoted value from the actual files and compares.
 ;;
-;;   nbb tools/verify_docs_claims.cljs             # offline (default)
-;;   nbb tools/verify_docs_claims.cljs --network   # also DNS + the live DID document
+;;   kbb --backend sci tools/verify_docs_claims.cljk             # offline (default)
+;;   kbb --backend sci tools/verify_docs_claims.cljk --network   # also DNS + the live DID document
 ;;
 ;; Exit is three-valued on purpose. A checker that could not run must not return the
 ;; same value as a checker that ran and found nothing wrong:
@@ -103,7 +103,7 @@
     (fs/writeFileSync entry
       "(ns s6-verify-suite (:require [clojure.test :as t] [society6.murakumo-test]))\n(t/run-tests 'society6.murakumo-test)\n")
     (let [out (try
-                (str (cp/execSync (str "nbb --classpath \"src:test\" " entry)
+                (str (cp/execSync (str "kbb --backend sci --classpath \"src:test\" " entry)
                                   #js {:encoding "utf8" :stdio "pipe"}))
                 (catch :default e
                   (refuse! (str "could not run the contract suite under nbb: "
