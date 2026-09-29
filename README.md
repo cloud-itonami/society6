@@ -24,7 +24,7 @@ JVM 無しで全部踏めます（`clojure` も要りません）。
 | `src/society6/murakumo.kotoba` | actor boundary。`cell-specs` に **11 cell**、`common-gates` に **7 gate** |
 | `test/society6/murakumo_test.kotoba` | 契約テスト。`cell-specs` を introspect するので cell を足しても書き換え不要 |
 | `actor-manifest.jsonld` | **旧 TypeScript 実装の manifest**（下記） |
-| `CLAUDE.md` | **旧 TypeScript 実装の説明**（下記） |
+| `AGENTS.md` | **旧 TypeScript 実装の説明**（下記） |
 | `.well-known/did.json` | DID 文書の**古いローカル写し**（下記） |
 | `tools/verify_docs_claims.kotoba` | この README と quickstart が引用している数値を実ファイルと突き合わせる |
 
@@ -88,7 +88,7 @@ repo の写しと live 文書は `@context`（ed25519-2020 と jws-2020）・PDS
 
 ### (4) 参照されているが存在しないファイルが 4 つ
 
-`NOTICE` → `CHARTER-RIDER.md` / `CLAUDE.md` → `wasm/society6-ui-s6c9m2q1/` /
+`NOTICE` → `CHARTER-RIDER.md` / `AGENTS.md` → `wasm/society6-ui-s6c9m2q1/` /
 `actor-manifest.jsonld` の `complianceDocs` → `90-docs/rules/...` と `90-docs/platform/...`。
 いずれも旧 monorepo のパスで、この repo には在りません。
 
@@ -96,7 +96,7 @@ repo の写しと live 文書は `@context`（ed25519-2020 と jws-2020）・PDS
 
 1. **`src/society6/murakumo.kotoba`** — ここだけが実行される（正確には、実行可能な計画を作る）
 2. **`docs/adr/`** — なぜ食い違いを直していないか
-3. `actor-manifest.jsonld` / `CLAUDE.md` / `MIGRATION-TODO.md` — 旧 TypeScript 実装の記述。
+3. `actor-manifest.jsonld` / `AGENTS.md` / `MIGRATION-TODO.md` — 旧 TypeScript 実装の記述。
    **現在のコードの仕様として読まない**
 
 ## ライセンス
